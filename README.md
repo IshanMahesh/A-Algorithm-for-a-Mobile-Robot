@@ -4,12 +4,12 @@ ENPM661 Project
 
 ## Authors:
 
-Name: Ishan Kharat (ishanmk@umd.edu)
+    Name: Ishan Kharat (ishanmk@umd.edu)
 
 
-UID: 120427145
+    UID: 120427145
 
-Name: Abhey Sharma (abheys16@umd.edu)
+    Name: Abhey Sharma (abheys16@umd.edu)
 
 
 UID: 
