@@ -2,7 +2,7 @@
 ENPM661 Project
 
 
-##Authors:
+## Authors:
 
 Name: Ishan Kharat (ishanmk@umd.edu)
 
@@ -14,7 +14,7 @@ Name: Abhey Sharma (abheys16@umd.edu)
 
 UID: 
 
-##Liraries Used:
+## Liraries Used:
 
     time
     cv2 - OpenCV
@@ -26,7 +26,7 @@ UID:
 
 
 
-##How to Run the Code:
+## How to Run the Code:
 
 git clone
 
