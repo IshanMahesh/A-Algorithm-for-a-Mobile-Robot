@@ -11,7 +11,7 @@ ENPM661 Project
 
 UID: 
 
-## Liraries Used:
+## Libraries Used:
 
     time
     cv2 - OpenCV
