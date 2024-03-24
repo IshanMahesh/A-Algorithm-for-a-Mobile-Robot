@@ -28,7 +28,7 @@ UID:
 
 ## How to Run the Code:
 
-git clone
+    git clone https://github.com/IshanMahesh/A-Algorithm-for-a-Mobile-Robot.git
 
     Enter the coordinates of starting node (x,y,theta): 40, 200, 30
     Enter the coordinates of Goal node (x,y,theta): 200, 200, 30
