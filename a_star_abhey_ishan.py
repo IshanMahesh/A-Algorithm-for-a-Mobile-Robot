@@ -216,8 +216,8 @@ def get_path(start_position, goal_position,closed_list):
     return path,closed_list
 
 
-def visualization(path, closed_list, canvas, start_position, goal_position, frame_skip=50):
-    output_video = cv2.VideoWriter('visualization.avi', cv2.VideoWriter_fourcc(*'XVID'), 1000, (canvas.shape[1], canvas.shape[0]))
+def visualization(path, closed_list, canvas, start_position, goal_position, frame_count=1000,frame_skip=50):
+    output_video = cv2.VideoWriter('visualization.mp4', cv2.VideoWriter_fourcc(*'mp4v'), 1000, (canvas.shape[1], canvas.shape[0]))
     skip_counter = 0
 
     # Draw start and goal node
@@ -229,19 +229,29 @@ def visualization(path, closed_list, canvas, start_position, goal_position, fram
 
     # Draw visited nodes on the mask
     for visited_node in closed_list:
-        visited_mask[int(visited_node[1])-1, int(visited_node[0])-1] = [57, 131, 196]
 
-    # Draw the visited nodes on the canvas
-    canvas[np.where((visited_mask == [57, 131, 196]).all(axis=2))] = [57, 131, 196]
+        canvas[int(visited_node[1])-1][int(visited_node[0])-1] = [57, 131, 196]
+        skip_counter += 1
+        if skip_counter == frame_skip:
+            vid = cv2.flip(canvas, 0) 
+            output_video.write(vid)
+            skip_counter = 0
 
     # Draw the full path on the canvas
-    for i in range(len(path) - 1):
-        cv2.line(canvas, (int(path[i][0]), int(path[i][1])), (int(path[i+1][0]), int(path[i+1][1])), (0, 0, 0), 2)
+    # for i in range(len(path) - 1):
+       
+        # cv2.line(canvas, (int(path[i][1]), int(path[i][0])), (int(path[i+1][1]), int(path[i+1][0])), (0, 0, 0), 2)
+
+    # vid = cv2.flip(canvas, 0)
+    # for _ in range(frame_count):
+    #     vid = cv2.flip(canvas, 0)
+    #     output_video.write(vid)
+
 
     # Write each frame to the output video
-    for _ in range(1):
-        vid = cv2.flip(canvas, 0)
-        output_video.write(vid)
+    # for _ in range(1):
+    #     vid = cv2.flip(canvas, 0)
+    #     output_video.write(vid)
 
     output_video.release()
 
@@ -274,7 +284,6 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
     index = round_node(start_position)
     visited_nodes[int(index[1]*2)][int(index[0]*2)][int(index[2]/30)] = 1
 
-    count = 0
 
     #while open list is not empty
     while open_list:
@@ -315,7 +324,7 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
 
                 # if all actions implemented for a particular node:
                 if np.sum(visited_nodes[scaled_x,scaled_y,:]) < 5:
-                    count = count+1
+            
                     # print(count)
                     # if (rounded_next_node not in visited_set):
                     if (visited_nodes[scaled_x,scaled_y,scaled_theta_index] == 0):
