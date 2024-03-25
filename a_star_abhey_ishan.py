@@ -10,18 +10,35 @@ import math
 
 def obstacle_map(canvas):
 
+    # creating boundary
+    cv2.rectangle(canvas, (0, 0), (width, height), (0, 0, 255), -1)
+    cv2.rectangle(canvas, (0+total_clearance, 0+total_clearance), (width-total_clearance, height-total_clearance), (255, 255, 255), -1)
+
     #Creating rectangle 1
-    # cv2.rectangle(canvas,pt1=(100,500),pt2=(175,100),color=(179,41,43),thickness=-1)
+    cv2.rectangle(canvas, pt1=(175 + total_clearance,100-total_clearance),pt2=(100 - total_clearance,500 + total_clearance), color=(0,0,255), thickness=-1)
     cv2.rectangle(canvas,pt1=(175,100),pt2=(100,500),color=(179,41,43),thickness=-1)
 
     #Creating rectangle 2
+    cv2.rectangle(canvas,pt1=(275 - total_clearance,400 + total_clearance),pt2=(350 + total_clearance,0 - total_clearance),color=(0,0,255),thickness=-1)
     cv2.rectangle(canvas,pt1=(275,400),pt2=(350,0),color=(179,41,43),thickness=-1)
-
+    
     # Draw hexagon
-    cv2.fillPoly(canvas, [np.array([(650, 400), (775, 325), (775, 175), (650, 100), (525, 175), (525, 325)])], color=(179,41,43))
+    vertices = 6
+    center = (650, 250)
+    radius = 150 + total_clearance
+    hexagon = cv2.ellipse2Poly(center, (radius, radius), 0, 0, 360, 60)
+    cv2.fillPoly(canvas, [hexagon], (0, 0, 255))
+    # cv2.fillPoly(canvas, [np.array([(650, 400), (775, 325), (775, 175), (650, 100), (525, 175), (525, 325)])], color=(179,41,43))
+
+    vertices = 6
+    center = (650, 250)
+    radius = 150
+    hexagon = cv2.ellipse2Poly(center, (radius, radius), 0, 0, 360, 60)
+    cv2.fillPoly(canvas, [hexagon], (179,41,43))
+
 
     # Draw polygon
-
+    cv2.fillPoly(canvas, [np.array([(900-total_clearance, 50-total_clearance), (900-total_clearance, 125+total_clearance), (1020-total_clearance, 125+total_clearance), (1020-total_clearance, 375-total_clearance), (900-total_clearance, 375-total_clearance), (900-total_clearance, 450+total_clearance), (1100+total_clearance, 450+total_clearance), (1100+total_clearance, 50-total_clearance)])], color=(0,0,255))
     cv2.fillPoly(canvas, [np.array([(900, 50), (900, 125), (1020, 125), (1020, 375), (900, 375), (900, 450), (1100, 450), (1100, 50)])], color=(179,41,43))
 
     return canvas
@@ -62,8 +79,22 @@ def input_coordinates():
 
     return start_node,goal_node
 
-# Input step size 
+def input_radius():
 
+    # Get robot radius from user input
+    while True:
+        try:
+            radius = int(input("Enter the robot radius (in mm): "))
+            if radius < 0:
+                print("Robot radius cannot be negative. Please enter a non-negative value.")
+            else:
+                break           
+        except ValueError:
+            print("Invalid input. Please enter a valid integer for the robot radius.")
+
+    return radius
+
+# Input step size 
 def input_step():
     while True:
         step_size = float(input("Enter the step size:"))
@@ -80,29 +111,15 @@ def input_step():
 def is_valid(x,y):
 
     #check if the coordinates are in bounds of canvas
-    if (0 <= x <= width and 0 <= y <= height):
+    if (0 + total_clearance <= x <= width - total_clearance and 0+ total_clearance <= y <= height-total_clearance):
         pass
     else:
         return False
 
-    #Here (x-5) and (y-5) is used to account for 5 mm clearance
-    #check if the coordinates are within bounds of rectangle 1
-    if ((100-5) <= x <= (175+5)) and (100-5 <= y <= (500+5)):
+    # check if the coordinates are within obstacle region
+    if np.array_equal(canvas[int(y), int(x)], [179, 41, 43]) or np.array_equal(canvas[int(y), int(x)], [0,0,255]):
         return False
-       
-    #check if the coordinates are within bounds of rectangle 2
-    if ((275-5) <= x <= (350+5)) and ((0-5) <= y <= (400+5)):
-        return False
-
-    #Here (x-3.53) and (y-3.53) is used to account for 5 mm clearance in diagonal dirn
-    #check if the coordinates are within bounds of hexagon
-    if (((y+3.53)+(3/5)*(x+3.53)-490 >=0) and ((y+3.53)-(3/5)*(x-3.53)+290>=0) and (y)<=175) or ((525-5) <= (x) <= (775+5) and (175 <= (y) <= 325)) or (((y-3.53)-(3/5)*(x+3.53)-10<=0) and ((y-3.53)+(3/5)*(x-3.53) - 790 <=0) and (y)>=325):
-        return False
-
-    #check if the coordinates are within bounds of polygon
-    if ((900-5) <= (x) <= (1100+5) and (50-5) <= (y) <= (125+5)) or ((1020-5) <= (x) <= (1100+5) and 125 <= (y) <= 375) or ((900-5) <= (x) <= (1100+5) and (375-5) <= (y) <= (450+5)):
-        return False
-    
+ 
     return True
 
 
@@ -200,35 +217,31 @@ def get_path(start_position, goal_position,closed_list):
 
 
 def visualization(path, closed_list, canvas, start_position, goal_position, frame_skip=50):
-    output_video = cv2.VideoWriter('visualization.mp4', cv2.VideoWriter_fourcc(*'XVID'), 1000, (canvas.shape[1], canvas.shape[0]))
+    output_video = cv2.VideoWriter('visualization.avi', cv2.VideoWriter_fourcc(*'XVID'), 1000, (canvas.shape[1], canvas.shape[0]))
     skip_counter = 0
 
     # Draw start and goal node
     cv2.circle(canvas, start_position[:2], 5, (0, 255, 0), -1)
     cv2.circle(canvas, goal_position[:2], 5, (0, 0, 255), -1)
 
-    # Draw visited nodes
+    # Create a mask image for visited nodes
+    visited_mask = np.zeros_like(canvas)
+
+    # Draw visited nodes on the mask
     for visited_node in closed_list:
-        canvas[int(visited_node[1])-1][int(visited_node[0])-1] = [57, 131, 196]
+        visited_mask[int(visited_node[1])-1, int(visited_node[0])-1] = [57, 131, 196]
 
-        skip_counter += 1
-        if skip_counter == frame_skip:
-            vid = cv2.flip(canvas, 0) 
-            output_video.write(vid)
-            skip_counter = 0
-    
-    # Draw optimal Path
-    optimal_path = copy.deepcopy(path)
-    optimal_path.reverse()
-    for _ in range(len(optimal_path)):
-        node = optimal_path.pop()
-        canvas[int(node[1])-1][int(node[0])-1] = [0, 0, 255]       
+    # Draw the visited nodes on the canvas
+    canvas[np.where((visited_mask == [57, 131, 196]).all(axis=2))] = [57, 131, 196]
 
-        skip_counter += 1
-        if skip_counter == frame_skip:
-            vid = cv2.flip(canvas, 0)
-            output_video.write(vid)
-            skip_counter = 0
+    # Draw the full path on the canvas
+    for i in range(len(path) - 1):
+        cv2.line(canvas, (int(path[i][0]), int(path[i][1])), (int(path[i+1][0]), int(path[i+1][1])), (0, 0, 0), 2)
+
+    # Write each frame to the output video
+    for _ in range(1):
+        vid = cv2.flip(canvas, 0)
+        output_video.write(vid)
 
     output_video.release()
 
@@ -338,6 +351,12 @@ if __name__=="__main__":
     width = 1200
     height = 500
     canvas = np.ones((height,width,3), dtype=np.uint8) * 255
+
+    # input clearance and robot radius
+    radius = input_radius()
+    obstacle_clearance = 5
+
+    total_clearance = radius + obstacle_clearance
 
     # draw the obstacle map
     canvas = obstacle_map(canvas)
