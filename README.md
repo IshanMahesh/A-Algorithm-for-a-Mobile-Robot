@@ -1,5 +1,5 @@
-# A-Algorithm-for-a-Mobile-Robot
-ENPM661 Project
+# A-star-Algorithm-for-a-Mobile-Robot
+ENPM661 Project3
 
 
 ## Authors:
@@ -25,10 +25,13 @@ ENPM661 Project
 
 ## How to Run the Code:
 
-    git clone https://github.com/IshanMahesh/A-Algorithm-for-a-Mobile-Robot.git
+    git clone https://github.com/IshanMahesh/A-star-Algorithm-for-a-Mobile-Robot.git
+
+    python a_star_abhey_ishan.py
 
 
-
-    Enter the coordinates of starting node (x,y,theta): 40, 200, 30
-    Enter the coordinates of Goal node (x,y,theta): 200, 200, 30
+    Enter the robot radius (in mm): 5
+    Enter the coordinates of starting node (x,y, theta): 40, 200, 30
+    Enter the coordinates of Goal node (x,y, theta): 200, 200, 30
+    Enter Step Size: 10
     
