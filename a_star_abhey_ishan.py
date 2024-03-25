@@ -11,7 +11,8 @@ import math
 def obstacle_map(canvas):
 
     #Creating rectangle 1
-    cv2.rectangle(canvas,pt1=(100,500),pt2=(175,100),color=(179,41,43),thickness=-1)
+    # cv2.rectangle(canvas,pt1=(100,500),pt2=(175,100),color=(179,41,43),thickness=-1)
+    cv2.rectangle(canvas,pt1=(175,100),pt2=(100,500),color=(179,41,43),thickness=-1)
 
     #Creating rectangle 2
     cv2.rectangle(canvas,pt1=(275,400),pt2=(350,0),color=(179,41,43),thickness=-1)
@@ -86,11 +87,11 @@ def is_valid(x,y):
 
     #Here (x-5) and (y-5) is used to account for 5 mm clearance
     #check if the coordinates are within bounds of rectangle 1
-    if ((100-5) <= x <= (175+5)) and (0 <= y <= (400+5)):
+    if ((100-5) <= x <= (175+5)) and (100-5 <= y <= (500+5)):
         return False
        
     #check if the coordinates are within bounds of rectangle 2
-    if ((275-5) <= x <= (350+5)) and ((100-5) <= y <= (500+5)):
+    if ((275-5) <= x <= (350+5)) and ((0-5) <= y <= (400+5)):
         return False
 
     #Here (x-3.53) and (y-3.53) is used to account for 5 mm clearance in diagonal dirn
@@ -245,7 +246,7 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
     node_info = {}
 
     # visited  nodes (as nearest 0.5 multiple)
-    visited_nodes = np.zeros((1000, 2400, 12), dtype=int)
+    visited_nodes = np.zeros((1001, 2401, 12), dtype=int)
 
     # heap to store the nodes based on their cost value
     hq.heapify(open_list)
@@ -258,7 +259,9 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
 
     # visited_set.add(round_node(start_position))
     index = round_node(start_position)
-    visited_nodes[int(index[0]*2)][int(index[1]*2)][int(index[2]/30)] = 1
+    visited_nodes[int(index[1]*2)][int(index[0]*2)][int(index[2]/30)] = 1
+
+    count = 0
 
     #while open list is not empty
     while open_list:
@@ -293,13 +296,14 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
                 rounded_next_node = round_node(next_node)
 
                 # Calculating the index of visited nodes array
-                scaled_x = int(rounded_next_node[0] * 2)
-                scaled_y = int(rounded_next_node[1] * 2)
+                scaled_x = int(rounded_next_node[1] * 2)
+                scaled_y = int(rounded_next_node[0] * 2)
                 scaled_theta_index = int(rounded_next_node[2] / 30)
 
                 # if all actions implemented for a particular node:
                 if np.sum(visited_nodes[scaled_x,scaled_y,:]) < 5:
-
+                    count = count+1
+                    # print(count)
                     # if (rounded_next_node not in visited_set):
                     if (visited_nodes[scaled_x,scaled_y,scaled_theta_index] == 0):
 
