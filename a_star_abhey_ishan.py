@@ -1,3 +1,7 @@
+### GitHub repository link
+# https://github.com/IshanMahesh/A-star-Algorithm-for-a-Mobile-Robot.git
+###
+
 #Import important libraries 
 import time
 import cv2
