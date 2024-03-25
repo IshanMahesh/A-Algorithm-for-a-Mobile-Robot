@@ -35,7 +35,17 @@ def input_coordinates():
         
         start_node = tuple(map(int, start_node_str.split(',')))
         goal_node = tuple(map(int, goal_node_str.split(',')))
-
+        
+        # Check if valid orientation
+        if start_node[2] % 30 == 0:
+            if goal_node[2] % 30 == 0:
+                pass
+            else:
+                print("Invalid goal orientation. Please enter valid orientaion ie multiple of 30 degree.")
+                continue
+        else:
+            print("Invalid start orientation. Please enter valid orientaion ie multiple of 30 degree.")
+            continue
 
         #Check if the start and goal node are valid
         if is_valid(start_node[0],start_node[1]):
@@ -50,6 +60,8 @@ def input_coordinates():
             continue
 
     return start_node,goal_node
+
+# Input step size 
 
 def input_step():
     while True:
@@ -118,7 +130,7 @@ def move_node(present_node,move):
     new_y = present_node[1] + move[1]
     new_theta = present_node[2] + move[2]
 
-    #rounding x,y to upto 2 decimal places
+    #rounding x,y to upto 1 decimal places
     new_x = round(new_x,1)
     new_y = round(new_y,1)
 
@@ -133,19 +145,24 @@ def move_node(present_node,move):
         return None
 
 
-
+# Heuristic Cost 
 def heuristic_cost(current_pos,goal_pos):
 
     cost = math.sqrt((goal_pos[1]-current_pos[1])**2+(goal_pos[0]-current_pos[0])**2) 
     return round(cost,1)
 
+# Rounding node to nearest 0.5 multiple 
 def round_node(node):
+
     x = round(node[0] * 2) / 2
     y = round(node[1] * 2) / 2
     theta = node[2]
+
     return x,y,theta
 
+# Checking if current node is within the threshold goal orientation
 def in_orientation_threshold(current_orientation,goal_orientation,threshold):
+
     if current_orientation > 180:
         current_orientation = 360 - current_orientation
         delta  = current_orientation + goal_orientation
@@ -246,32 +263,21 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
     #while open list is not empty
     while open_list:
 
-        # total_cost,cost2come,parent_node, present_node = hq.heappop(open_list)
-
         total_cost, present_node = hq.heappop(open_list)
         parent_node, cost2come = node_info[present_node]
 
         # Adding the present node to closed list with its parent node - {present_node:parent_node}
 
-        # rounded_closed_node = round_node(present_node)
-        # closed_list[(present_node[0], present_node[1],present_node[2])] = parent_node
-
         closed_list[present_node] = parent_node
-        # closed_list[rounded_closed_node[0], rounded_closed_node[1], rounded_closed_node[2]] = parent_node
 
-        # closed_set.add(round_node(present_node))
-  
-
-        # print(present_node)
+        #Calculating cost to goal
         cost2goal = total_cost-cost2come
-        #if goal reached
-        # if list(present_node) == list(goal_position):
-        # if heuristic_cost(present_node, goal_position) <= goal_threshold_distance:
+
+        #if goal distance theshold reached
         if cost2goal <= goal_threshold_distance:
 
+            #if goal orientation theshold reached
             if in_orientation_threshold(present_node[2],goal_position[2],goal_threshold_angle) :
-
-            # closed_list[(goal_position[0], goal_position[1],goal_position[2])] = present_node
             
                 closed_list[goal_position] = present_node
                 print("goal reached")
@@ -286,11 +292,12 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
 
                 rounded_next_node = round_node(next_node)
 
+                # Calculating the index of visited nodes array
                 scaled_x = int(rounded_next_node[0] * 2)
                 scaled_y = int(rounded_next_node[1] * 2)
                 scaled_theta_index = int(rounded_next_node[2] / 30)
 
-                # if (rounded_next_node not in closed_set):
+                # if all actions implemented for a particular node:
                 if np.sum(visited_nodes[scaled_x,scaled_y,:]) < 5:
 
                     # if (rounded_next_node not in visited_set):
@@ -299,13 +306,10 @@ def a_star(start_position, goal_position, canvas,step_size, goal_threshold_dista
                         new_cost2come = cost2come + step_size
                         new_total_cost = new_cost2come + heuristic_cost(next_node, goal_position)
 
-                        # hq.heappush(open_list, [cost2come+step_size+heuristic_cost(next_node,goal_position),cost2come + step_size, present_node, list(next_node)])
-                        # hq.heapify(open_list)
-
                         hq.heappush(open_list, [new_total_cost, next_node])
                         node_info[next_node] = [present_node, new_cost2come]
 
-                        # visited_set.add(rounded_next_node)
+                        # Set visited node as 1
                         visited_nodes[scaled_x,scaled_y,scaled_theta_index] = 1
                 
                     # if node is already in open list we need to compare cost and update if needed
@@ -353,6 +357,6 @@ if __name__=="__main__":
     end_time = time.time()
 
     print("Total time taken to execute the code: ",end_time-start_time) 
-    print(f"closed_list : {closed_list}")
-    print(f"path : {path}")
+    # print(f"closed_list : {closed_list}")
+    # print(f"path : {path}")
     
