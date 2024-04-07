@@ -1,5 +1,5 @@
 # A-star-Algorithm-for-a-Mobile-Robot
-ENPM661 Project3
+ENPM661 Project3 Phase1
 
 
 ## Authors:
